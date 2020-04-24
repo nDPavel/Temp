@@ -1,0 +1,18 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml-stylesheet type='text/xsl' href='style.xsl'?>
+<AnyConnectPreferences>
+    <DefaultUser />
+    <DefaultSecondUser />
+    <ClientCertificateThumbprint />
+    <MultipleClientCertificateThumbprints />
+    <ServerCertificateThumbprint />
+    <DefaultHostName>vpn.fl-cc.ru</DefaultHostName>
+    <DefaultHostAddress />
+    <DefaultGroup />
+    <ProxyHost />
+    <ProxyPort />
+    <SDITokenType>none</SDITokenType>
+    <ControllablePreferences>
+        <BlockUntrustedServers>False</BlockUntrustedServers>
+    </ControllablePreferences>
+</AnyConnectPreferences>

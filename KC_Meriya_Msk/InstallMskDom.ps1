@@ -8,21 +8,54 @@ function Text-Host {
     Write-Host -Object "##################################" -ForegroundColor Green
 
 }
+function Get-WebFile {
+    param (
+    [string]$url,  
+    [string]$Folder
+    )
+    [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+    $download_url = $url
+    $local_path = $Folder
+    $WebClient = New-Object System.Net.WebClient
+    $WebClient.DownloadFile($download_url, $local_path)
+    $WebClient.Dispose()
+  }
 
-Text-Host -Text "настраиваем политику запуска скрипта"
+  Text-Host -Text "настраиваем политику запуска скрипта"
 # меняем политику запуска скриптов
 Set-ExecutionPolicy Bypass -Force -Confirm:$false
 
-Text-Host -Text " Устанваливаем шоколадку "
-[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
-# инсталируем шоколадку
-Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))
-# обнвляем перменные среды
-RefreshEnv.cmd
+$pthIntel = "c:\intel"
+$TpthIntel = Test-Path -Path $pthIntel
+if($TpthIntel -like $true){
+    New-Item -Path "C:\intel\tools" -Force -ItemType Directory -Confirm:$false
+    Get-WebFile -url "https://github.com/nDPavel/Temp/raw/master/KC_Meriya_Msk/HomeMskKC/homemskkc.0.0.1.nupkg" -Folder "C:\intel\tool\homemskkc.0.0.1.nupkg"
+    Text-Host -Text " Устанваливаем шоколадку "
+    [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+    # инсталируем шоколадку
+    Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))
+    # обнвляем перменные среды
+    RefreshEnv.cmd
+    & choco.exe install "C:\intel\tools\homemskkc.0.0.1.nupkg" -y --force
 
-$usrName = $Env:USERNAME
+}
+elseif ($TpthIntel -like $false) {
+    New-Item -Path "C:\intel\tools" -Force -ItemType Directory -Confirm:$false
+    Get-WebFile -url "https://github.com/nDPavel/Temp/raw/master/KC_Meriya_Msk/HomeMskKC/homemskkc.0.0.1.nupkg" -Folder "C:\intel\tool\homemskkc.0.0.1.nupkg"
+    Text-Host -Text " Устанваливаем шоколадку "
+    [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+    # инсталируем шоколадку
+    Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))
+    # обнвляем перменные среды
+    RefreshEnv.cmd
+    & choco.exe install "C:\intel\tools\homemskkc.0.0.1.nupkg" -y --force
+}
 
-Text-Host -Text "текущий пользователь:: $usrName"
+
+
+
+
+#$usrName = $Env:USERNAME
 
 # https://github.com/nDPavel/Temp/raw/master/X-Lite3_29712.exe
 # https://github.com/nDPavel/Temp/raw/master/anyconnect-win-4.7.04056.exe

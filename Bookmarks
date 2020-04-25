@@ -1,0 +1,47 @@
+{
+   "checksum": "b0133230f91ad1c9f22f5532b1cd80ef",
+   "roots": {
+      "bookmark_bar": {
+         "children": [ {
+            "date_added": "13231929311639894",
+            "guid": "1ee7a4fa-34bf-4e92-9f3c-cb996aec3945",
+            "id": "7",
+            "name": "Корпоративный портал",
+            "type": "url",
+            "url": "https://redmine.vivadengi.ru/"
+         }, {
+            "date_added": "13231929338453225",
+            "guid": "c778fa41-45c2-4598-8bbf-5a2484fc28f9",
+            "id": "8",
+            "name": "Корпоративная почта",
+            "type": "url",
+            "url": "https://mail.vivadengi.ru/webmail/login/#mail"
+         } ],
+         "date_added": "13231928809437043",
+         "date_modified": "13231929338453225",
+         "guid": "00000000-0000-4000-a000-000000000002",
+         "id": "1",
+         "name": "Панель закладок",
+         "type": "folder"
+      },
+      "other": {
+         "children": [  ],
+         "date_added": "13231928809437060",
+         "date_modified": "0",
+         "guid": "00000000-0000-4000-a000-000000000003",
+         "id": "2",
+         "name": "Другие закладки",
+         "type": "folder"
+      },
+      "synced": {
+         "children": [  ],
+         "date_added": "13231928809437063",
+         "date_modified": "0",
+         "guid": "00000000-0000-4000-a000-000000000004",
+         "id": "3",
+         "name": "Моб. закладки",
+         "type": "folder"
+      }
+   },
+   "version": 1
+}

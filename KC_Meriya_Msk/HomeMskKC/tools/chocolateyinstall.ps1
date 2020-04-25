@@ -1,7 +1,9 @@
 ﻿import-module C:\ProgramData\chocolatey\helpers\functions\Get-ChocolateyWebFile.ps1
 import-module "C:\ProgramData\chocolatey\helpers\functions\Install-ChocolateyPackage.ps1"
+Import-Module C:\ProgramData\chocolatey\helpers\chocolateyInstaller.psm1
+Import-Module C:\ProgramData\chocolatey\helpers\chocolateyProfile.psm1
 function Text-Host {
-  [CmdletBinding()]
+  [CmdletBinding()]  
   param (
       [string]$Text
   )
@@ -20,8 +22,10 @@ function Get-WebFile {
   $local_path = $Folder
   $WebClient = New-Object System.Net.WebClient
   $WebClient.DownloadFile($download_url, $local_path)
+  $WebClient.Dispose()
 }
 
+# Инсталируем ПО
 $packageName = $env:ChocolateyPackageName
 
 $pthinstall = "c:\intel\soft"
@@ -57,14 +61,12 @@ Get-ChocolateyWebFile -packageName $packageName  `
 Get-ChocolateyWebFile -packageName $packageName  `
                           -fileFullPath (Join-Path -Path $pthinstall -ChildPath "X-Lite3_29712.exe") `
                           -url64 $url_Xlite `
-                          -checksum $chkSum_Xlite `
+                          -checksum64 $chkSum_Xlite `
                           -checksumType $checkSumType
 
                           # annyconn 
 Get-ChocolateyWebFile -packageName $packageName  `
                           -fileFullPath (Join-Path -Path $pthinstall -ChildPath "anyconnect-win-4.7.04056.exe") `
-                          -url $url_AnnyCon  `
-                          -checksum $chkSum_AnnyConn `
                           -url64 $url_AnnyCon  `
                           -checksum64 $chkSum_AnnyConn `
                           -checksumType $checkSumType
@@ -82,17 +84,17 @@ Text-Host -Text "Устанавливаем ПО AnnyConnection"
 Install-ChocolateyInstallPackage -packageName "AnnyConnection" `
                                 -fileType "exe"  `
                                 -silentArgs " /qn" `
-                                -file "C:\intel\soft\anyconnect-win-4.7.04056.exe" `
                                 -file64 "C:\intel\soft\anyconnect-win-4.7.04056.exe" -validExitCodes @(0, 3010, 1641)
 
-# Конфигурирование настроек
+
+########################### Конфигурирование настроек ########################################################
 #google
 Text-Host -Text "добавляем ссылки на пропуска"
 Start-Process -FilePath "C:\intel\Soft\ChromeBookEdit.exe" -Wait
 
 $usrName = $Env:USERNAME
-
 Text-Host -Text "Текущий пользователь:: $usrName"
+Text-host -text "Настраиваем AnnyConnection"
 $pthAnnyConnCfg   = "C:\Users\$usrName\AppData\Local\Cisco\Cisco AnyConnect Secure Mobility Client\preferences.xml"
 $pthAppCisco      = "C:\Users\$usrName\AppData\Local\Cisco"
 $pthAppCiscoAnny  = "C:\Users\$usrName\AppData\Local\Cisco\Cisco AnyConnect Secure Mobility Client"
@@ -100,10 +102,10 @@ $pthAppCiscoAnny  = "C:\Users\$usrName\AppData\Local\Cisco\Cisco AnyConnect Secu
 $tPthAnnyConnCfg  = Test-Path $pthAnnyConnCfg
 $tPthAppCisco     = Test-Path $pthAppCisco
 $tPthAppCiscoAnny = Test-Path $pthAppCiscoAnny
-# логика обработки папок настройки анни конекшен
 
+# логика обработки папок настройки анни конекшен
 if($tPthAnnyConnCfg -like $true){
-  if (!$tPthAppCisco or !$tPthAppCiscoAnny) {
+  if (!$tPthAppCisco -or !$tPthAppCiscoAnny) {
     New-Item -Path $pthAppCiscoAnny -ItemType Directory -Force -Confirm:$false
     
     $xmlsettings = New-Object System.Xml.XmlWriterSettings
@@ -159,101 +161,95 @@ if($tPthAnnyConnCfg -like $true){
   $xmlWriter.WriteEndDocument()
   $xmlWriter.Flush()
   $xmlWriter.Close()
-  
 }
 
-# настройка телефонии
+Text-Host -Text "Настраиваем телефонию Xlite"
 
-function Set-XlitePhone {
-  
-  $Number = (Read-Host -Prompt "введите номер Xlite::") -replace(" ",'')
-  $Phone1 = (4285..4290) 
+function Find-XliteNumber {
+  $Phone1 = (4285..4290)
   $Phone2 = (5900..5999)
   $Phone3 = (8814..8860)
-  $Number = $Null
-  #Функция копирования настроек xlite
-  $Number = 4285
-
-  function Set-XliteSettings{
-    [CmdletBinding()]
-    param (
-        [Parameter()]
-        [string]
-        $Number,
-        [Parameter()]
-        [string]
-        $AppUser
-    )
-    Text-Host -Text "Формируем ссылка на настрйки номера"
-    $Url_dialPad = "https://github.com/nDPavel/Temp/raw/master/XliteProfile/$Number/default_user/dialpad.cps"
-    $Url_recentcalls = "https://github.com/nDPavel/Temp/raw/master/XliteProfile/$Number/default_user/recentcalls.cps"
-    $Url_settings = "https://github.com/nDPavel/Temp/raw/master/XliteProfile/$Number/default_user/settings.cps"
-    $Url_ui = "https://github.com/nDPavel/Temp/raw/master/XliteProfile/$Number/default_user/ui.cps"
-    
-    
-    $Url_dialPad
-    $Url_recentcalls
-    $Url_setting
-    $Url_ui
-
-    Text-Host -Text "Подготавливаем профиль пользователя"
-    # проверяем профиль пользователя
-    # C:\Users\Administrator\AppData\Local\CounterPath\X-Lite\default_user
-    $pthUserAppCounter = "c:\users\$usrName\appdata\Local\CounterPath"
-    $TpthUserAppCounter = Test-Path $pthUserAppCounter
-    $pthUserAppXlite = "c:\users\$usrName\appdata\Local\CounterPath\X-Lite"
-    $TpthUserAppXlite = Test-Path $pthUserAppXlite
-    $pthUserAppDefUser = "c:\users\$usrName\appdata\Local\CounterPath\X-Lite\default_user"
-    $TpthUserAppDefUser = Test-Path $pthUserAppDefUser
-    if ($TpthUserAppDefUser) {
-      Text-Host -Text "Удаляем старые настройки"
-      Remove-Item -Path $pthUserAppDefUser -Force -Confirm:$false -Recurse
-      New-Item -Path $pthUserAppDefUser -ItemType Directory -Force -Confirm:$false
-    
-    
-    
-    }else{
-      New-Item -Path $pthUserAppDefUser -ItemType Directory -Force -Confirm:$false
-    }
-
-
-
+  #$AllPhone = @{ 
+  #    "1" = [string]$Phone1
+  #    "2" = [string]$Phone2
+  #    "3" = [string]$Phone3
+  #    }
+      
+  $InputNumber = (Read-Host -Prompt "введите номер Xlite::") -replace(" ",'')
+  $Number = $InputNumber
   
-  
-  
-  }
-  
-
-
-
-
-
-
-
   if (!($Phone1 -eq $Number) -like $false){
-    Text-Host -Text "настраиваем телефонию"
-    Text-Host -Text "на номер::$Number"
+      Text-Host -Text "Есть такой номер::$InputNumber"
+      return $InputNumber
   }
   elseif (!($Phone2 -eq $Number) -like $false) {
-    Text-Host -Text "настраиваем телефонию"
-    Text-Host -Text "на номер::$Number"
+      Text-Host -Text "Есть такой номер::$InputNumber"
+      return $InputNumber
   }
   elseif (!($Phone3 -eq $Number) -like $false) {
-    Text-Host -Text "настраиваем телефонию"
-    Text-Host -Text "на номер::$Number"
+      Text-Host -Text "Есть такой номер::$InputNumber"
+      return $InputNumber
   }
   else{
-    Write-Error -message "!!!!!номера нет или он введн не правильно!!!!"
-    
-    return Set-XlitePhone
+      Write-Error -message "!!!!!номера нет или он введн не правильно!!!!"
+      return Find-Xlitenumber
   }
-   
 }
+# Получаем номер для настройки
+$FindNumer = Find-XliteNumber
+$FindNumer
 
-Set-XlitePhone 
+Text-Host -Text "Формируем ссылка на настрйки номера"
+$Url_dialPad = "https://github.com/nDPavel/Temp/raw/master/XliteProfile/$FindNumer/default_user/dialpad.cps"
+$Url_dialPad
+$Url_recentcalls = "https://github.com/nDPavel/Temp/raw/master/XliteProfile/$FindNumer/default_user/recentcalls.cps"
+$Url_recentcalls
+$Url_settings = "https://github.com/nDPavel/Temp/raw/master/XliteProfile/$FindNumer/default_user/settings.cps"
+$Url_setting
+$Url_ui = "https://github.com/nDPavel/Temp/raw/master/XliteProfile/$FindNumer/default_user/ui.cps"
+$Url_ui
 
+Text-Host -Text "Подготавливаем профиль пользователя"
+# проверяем профиль пользователя
+# C:\Users\Administrator\AppData\Local\CounterPath\X-Lite\default_user
+$pthUserAppCounter = "c:\users\$usrName\appdata\Local\CounterPath"
+$TpthUserAppCounter = Test-Path $pthUserAppCounter
+$pthUserAppXlite = "c:\users\$usrName\appdata\Local\CounterPath\X-Lite"
+$TpthUserAppXlite = Test-Path $pthUserAppXlite
+$pthUserAppDefUser = "c:\users\$usrName\appdata\Local\CounterPath\X-Lite\default_user"
+$TpthUserAppDefUser = Test-Path $pthUserAppDefUser
+# пути к файлам
+$file_dialPad = (Join-Path -path  $pthUserAppDefUser  -ChildPath "dialpad.cps")    
+$file_recentcalls = (Join-Path -path  $pthUserAppDefUser  -ChildPath "recentcalls.cps")   
+$file_settings = (Join-Path -path  $pthUserAppDefUser  -ChildPath "settings.cps")   
+$file_ui= (Join-Path -path  $pthUserAppDefUser  -ChildPath "ui.cps")   
 
+if ($TpthUserAppDefUser) {
+  Text-Host -Text "Удаляем старые настройки"
+  Remove-Item -Path $pthUserAppDefUser -Force -Confirm:$false -Recurse
+  Text-Host -Text "Создаем чистую директорию"
+  New-Item -Path $pthUserAppDefUser -ItemType Directory -Force -Confirm:$false
+  Text-Host -Text "Скачиваем dialpad.cps"
+  Get-WebFile -Folder $file_dialPad -url $Url_dialPad
+  Text-Host -Text "Скачиваем recentcalls.cps"
+  Get-WebFile -Folder $file_recentcalls -url $Url_recentcalls
+  Text-Host -Text "Скачиваем settings.cps"
+  Get-WebFile -Folder $file_settings -url $Url_settings
+  Text-Host -Text "Скачиваем ui.cps"
+  Get-WebFile -Folder $file_ui -url $Url_ui
+  Text-Host -Text "номер настроен $FindNumer"
 
-
-
-
+}else{
+  New-Item -Path $pthUserAppDefUser -ItemType Directory -Force -Confirm:$false
+  Text-Host -Text "Создаем чистую директорию"
+  New-Item -Path $pthUserAppDefUser -ItemType Directory -Force -Confirm:$false
+  Text-Host -Text "Скачиваем dialpad.cps"
+  Get-WebFile -Folder $file_dialPad -url $Url_dialPad
+  Text-Host -Text "Скачиваем recentcalls.cps"
+  Get-WebFile -Folder $file_recentcalls -url $Url_recentcalls
+  Text-Host -Text "Скачиваем settings.cps"
+  Get-WebFile -Folder $file_settings -url $Url_settings
+  Text-Host -Text "Скачиваем ui.cps"
+  Get-WebFile -Folder $file_ui -url $Url_ui
+  Text-Host -Text "номер настроен $FindNumer"
+}

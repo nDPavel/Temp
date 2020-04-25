@@ -28,7 +28,7 @@ Text-Host -Text "текущий пользователь:: $usrName"
 # https://github.com/nDPavel/Temp/raw/master/anyconnect-win-4.7.04056.exe
 
 
-Test-Path
+
 
 
 
